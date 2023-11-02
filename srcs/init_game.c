@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   init_game.c                                        :+:      :+:    :+:   */
+/*   INIT_GAME.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: pferreir <pferreir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/30 21:50:36 by pferreir          #+#    #+#             */
-/*   Updated: 2023/10/31 03:05:09 by pferreir         ###   ########.fr       */
+/*   Created: 2023/11/01 18:54:34 by pferreir          #+#    #+#             */
+/*   Updated: 2023/11/02 08:10:15 by pferreir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "cube3d.h"
+#include "cub3d.h"
 
 void	img_pix_put(t_img *img, int x, int y, int color)
 {
@@ -20,42 +20,73 @@ void	img_pix_put(t_img *img, int x, int y, int color)
 	*(int *)pixel = color;
 }
 
-
 int	can_we_see_the_window(t_data *d)
 {
 	d->mlx = mlx_init();
 	if (!d->mlx)
 		return (0);
-	d->win = mlx_new_window(d->mlx, width, height, "depression3d");
+	d->win = mlx_new_window(d->mlx, WIDTH, HEIGHT, "cub3d");
 	if (!d->win)
 		return (0);
-	d->img = mlx_new_image(d->mlx, width, height);
+	d->img = mlx_new_image(d->mlx, WIDTH, HEIGHT);
 	if (!d->img)
 		return (0);
 	d->add = mlx_get_data_addr(d->img, &d->bits_per_pixel, &d->line_length,
 		&d->endian);
-	d->tex = ft_calloc(5, sizeof(d->tex));
-	if (d->tex)
+	if (!d->add)
 		return (0);
-	// d->tex[N] = xpm_to_img();
-	// d->tex[S] = xpm_to_img();
-	// d->tex[E] = xpm_to_img();
-	// d->tex[W] = xpm_to_img();
-	// mlx_xpm_file_to_image
-	//		mlx_mouse_move(data->mlx, data->win, data->win_width / 2, data->win_height / 2);
+	init_texture(d);
 	return (1);
 }
 
-void	init_player(t_player *player)
+void	render_map2(t_data *d)
 {
-	player->x = width / 2;
-	player->y = height / 2;
-	player->rad = 3;
-	player->turnD = 0;
-	player->walkD = 0;
-	player->rotAng = 0.015;
-	player->moveS = 0.0125;
-	player->rotS = 2 * M_PI / 180;
+	int	i;
+	int	j;
+
+	i = 0;
+	while (i < d->nbcol * tile)
+	{
+		j = 0;
+		while (j < d->nbline * tile)
+		{
+			// if ((i - hit_x) * (i - hit_x + (j - hit_y) * (j - hit_y) <= 20))
+			// 	img_pix_put(d->img, i, j++, 0x0000FF);
+			if ((i - d->p.px * tile) * (i - d->p.px * tile) + (j - d->p.py * tile) * (j - d->p.py * tile) <= 20)
+				img_pix_put(d->img, i, j++, 0xFF0000);
+			else if (i % tile  == 0 || j % tile == 0)
+				img_pix_put(d->img, i, j++, 0x000000);
+			else if (d->work_map[j / tile][i / tile] == '1')
+				img_pix_put(d->img, i, j++, 0x000000);
+			else
+				img_pix_put(d->img, i, j++, 0xFFFFFF);
+		}
+		++i;
+	}
+	mlx_put_image_to_window(d->mlx, d->win, d->img, 0, 0);
+	// mlx_destroy_image(d->mlx, d->img);
+}
+
+int	render(t_data *data)
+{
+	if (!move_player(data))
+		return (0);
+	render_map(data);
+	return (0);
+}
+
+// int	render2(t_data *d)
+// {
+// 	render_map2(d);
+// 	return (0);
+// }
+
+
+void	render_map(t_data *d)
+{
+	castAllRAys(&(d->p), d);
+	// draw_background(d);
+	mlx_put_image_to_window(d->mlx, d->win, d->img, 0, 0);
 }
 
 void	init_game(t_data *d)
@@ -65,11 +96,19 @@ void	init_game(t_data *d)
 		ft_printf("MLX ERROR");
 		return ;
 	}
-	start_game(d);
-	mlx_loop_hook(d->mlx, &render, d);
-	mlx_hook(d->win, 2, 1, &input_data, d);
-	mlx_hook(d->win, 17, 0, &close_win, d);
-	mlx_loop(d->mlx);
 }
 
-// unsigned int pixel = (coul.R<<16) | (coul.G<<8) | coul.B
+int	close_window(t_data *d)
+{
+	if (d)
+	{
+		mlx_destroy_window(d->mlx, d->win);
+	//	free_texture(d);
+		mlx_destroy_image(d->mlx, d->img);
+		mlx_destroy_display(d->mlx);
+		mlx_loop_end(d->mlx);
+		free(d->mlx);
+	}
+	exit (0);
+	return (0);
+}

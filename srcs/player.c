@@ -1,91 +1,114 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   player.c                                           :+:      :+:    :+:   */
+/*   PLAYER.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: pferreir <pferreir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/31 02:36:20 by pferreir          #+#    #+#             */
-/*   Updated: 2023/10/31 03:42:02 by pferreir         ###   ########.fr       */
+/*   Created: 2023/11/01 19:58:55 by pferreir          #+#    #+#             */
+/*   Updated: 2023/11/02 06:24:17 by pferreir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "cube3d.h"
-
 #include "cub3d.h"
 
-int		orientation(float angle)
+void	init_player(t_data *data)
 {
-	angle = normalize_angle(angle);
-	if ((angle > M_PI * 0.25) && (angle < 0.75 * M_PI))
-		return (1);
-	else if ((angle > M_PI * 1.25) && (angle < 1.75 * M_PI))
-		return (1);
-	return (0);
-}
-
-void			player_movement(t_player *player)
-{
-	float		move_step;
-	float		newX;
-	float		newY;
-	int			orientation;
-
-	orientation = orientation(player->rotAng);
-
-	player->rotAng += player->turnD * player->rotS;
-
-	move_step = player->walkD * player->move_speed;
-
-	newX = player->x + cos(player->rotAng) * move_step;
-
-	newY = player->y + sin(player->rotAng) * move_step;
-	
-	if (player->translate == -1 || player->translate == 1)
+	data->p.px = data->player_pos_x;
+	data->p.py = data->player_pos_y;
+	if (data->player_dir == 'S')
 	{
-		player->angle_angle = (M_PI * 0.5) - player->rotAng;
-		if (orientation == 1)
-		{
-			newX = player->x - cos(player->angle_angle) * move_step;
-			newY = player->y + sin(player->angle_angle) * move_step;
-		}
-		else if (orientation == 0)
-		{
-			newX = player->x + cos(player->angle_angle) * -move_step;
-			newY = player->y - sin(player->angle_angle) * -move_step;
-		}
+		data->p.dir_x = 0;
+		data->p.dir_y = 1;
+		data->p.plane_x = -0.66;
+		data->p.plane_y = 0;
+	}
+	else if (data->player_dir == 'N')
+	{
+		data->p.dir_x = 0;
+		data->p.dir_y = -1;
+		data->p.plane_x = 0.66;
+		data->p.plane_y = 0;
+	}
+	if (data->player_dir == 'W')
+	{
+		data->p.dir_x = -1;
+		data->p.dir_y = 0;
+		data->p.plane_x = 0;
+		data->p.plane_y = -0.66;
+	}
+	else if (data->player_dir == 'E')
+	{
+		data->p.dir_x = 1;
+		data->p.dir_y = 0;
+		data->p.plane_x = 0;
+		data->p.plane_y = 0.66;
 	}
 }
 
-/*void			player_movement(t_player *player)
+int	rotate_player(double rotdir, t_player *p)
 {
-	float		move_step;
-	float		newX;
-	float		newY;
-	int			orientation;
+	int		moved;
+	double tmp;
+	double	rotspeed;
 
-	orientation = orientation(player->rotAng);
+	moved = 0;
+	rotspeed = rotS * rotdir;
+	tmp = p->dir_x;
+	p->dir_x = p->dir_x * cos(rotspeed) - p->dir_y * sin(rotspeed);
+	p->dir_y = tmp * sin(rotspeed) + p->dir_y * cos(rotspeed);
+	tmp = p->plane_x;
+	p->plane_x = p->plane_x * cos(rotspeed) - p->plane_y * sin(rotspeed);
+	p->plane_y = tmp * sin(rotspeed) + p->plane_y * cos(rotspeed);
+	return (1);
+}
 
-	player->rotAng += player->turnD * player->rotS;
+int	validate_move(t_data *data, double new_x, double new_y)
+{
+	int	moved;
 
-	move_step = player->walkD * player->move_speed;
-
-	newX = player->x + cos(player->rotAng) * move_step;
-
-	newY = player->y + sin(player->rotAng) * move_step;
-	
-	if (player->translate == -1 || player->translate == 1)
+	moved = 0;
+	if (new_x > 0.25 && new_x <= data->nbcol  * (tile - 1))
 	{
-		player->angle_angle = (M_PI * 0.5) - player->rotAng;
-		if (orientation == 1)
-		{
-			newX = player->x - cos(player->angle_angle) * move_step;
-			newY = player->y + sin(player->angle_angle) * move_step;
-		}
-		else if (orientation == 0)
-		{
-			newX = player->x + cos(player->angle_angle) * -move_step;
-			newY = player->y - sin(player->angle_angle) * -move_step;
-		}
+		data->p.px = new_x;
+		moved = 1;
 	}
-}*/
+	if (new_y > 0.25 && new_y <= data->nbline * (tile - 1))
+	{
+		data->p.py = new_y;
+		moved = 1;
+	}
+	return (moved);
+}
+
+int	move_player(t_data *data)
+{
+	double	new[2];
+
+	if (data->p.move_y == 1)
+	{
+		new[0] = data->p.px + data->p.dir_x * moveS;
+		new[1] = data->p.py + data->p.dir_y * moveS;
+		printf("ox = %f oy = %f nx = %f ny = %f\n", data->p.px, data->p.py, new[0], new[1]);
+	}
+	else if (data->p.move_y == -1)
+	{
+		new[0] = data->p.px - data->p.dir_x * moveS;
+		new[1] = data->p.py - data->p.dir_y * moveS;
+	}
+	else if (data->p.move_x == -1)
+	{
+		new[0] = data->p.px + data->p.dir_y * moveS;
+		new[1] = data->p.py - data->p.dir_x * moveS;
+	}
+	else if (data->p.move_x == 1)
+	{
+		new[0] = data->p.px - data->p.dir_y * moveS;
+		new[1] = data->p.py + data->p.dir_x * moveS;
+	}
+	else if (data->p.rot != 0)
+		return(rotate_player(data->p.rot, &(data->p)));
+	else
+		return (0);
+	return (validate_move(data, new[0], new[1]));
+}

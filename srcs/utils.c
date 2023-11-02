@@ -1,52 +1,88 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   math.c                                             :+:      :+:    :+:   */
+/*   utils.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: pferreir <pferreir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/10/31 03:27:59 by pferreir          #+#    #+#             */
-/*   Updated: 2023/10/31 03:28:53 by pferreir         ###   ########.fr       */
+/*   Created: 2023/10/31 23:32:19 by dsydelny          #+#    #+#             */
+/*   Updated: 2023/11/02 05:27:48 by pferreir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "cub3d.h"
 
-int	is_wall(t_data *d, int l, int c)
+int	invalid_start(t_data *data, char *s)
 {
-	if (l < 0 || l > HEIGHT / 64 || c < 0 || c > WIDTH / 64)
-		return (0);
-	if (d->map[c][l] == '1')
+	int	i;
+
+	i = 0;
+	if (s[0] == '\n')
+		return (1);
+	while (s[i])
+	{
+		if (s[i] == '1')
+			data->cnt_1++;
+		if (s[i] != ' ' && s[i] != '1' && s[i] != '\n')
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
+int	invalid_row(char *s)
+{
+	int	i;
+
+	i = 0;
+	while (s[i])
+	{
+		if (ft_isascii(s[i]) || s[i] == '\n' || s[i] == '\0')
+			i++;
+		else
+			return (0);
+	}
+	return (1);
+}
+
+int	check_valid_chars(t_data *data, char *s)
+{
+	int	i;
+
+	i = 0;
+	while (s && s[i] && s[i] != '\n')
+	{
+		if (s[i] == '1' || s[i] == '0' || s[i] == ' ')
+			i++;
+		else if (s[i] == 'N' || s[i] == 'S' || s[i] == 'E' || s[i] == 'W')
+		{
+			data->pos++;
+			i++;
+		}
+		else
+			return (0);
+	}
+	if (s[i] == '\n')
 		return (1);
 	return (0);
 }
 
-float	degToRad(float ang)
+int	check_valid_char(char *s)
 {
-	return (ang * M_PI / 180.0);
-}
+	int	i;
 
-float	normalizeAngle(float angle)
-{
-	angle = remainderf(angle, 2 * M_PI);
-	if (angle < 0)
-		angle += (2 * M_PI);
-	return (angle);
-}
-
-void	facing_angle(t_ray *ray)
-{
-	if (ray->rang > 0 && ray->rang < M_PI)
-		ray->facing_up = 1;
-	else
-		ray->facing_down = 1;
-	if (ray->rang < 0.5 * M_PI || ray->rang > 1.5 * M_PI)
-		ray->facing_right = 1;
-	else
-		ray->facing_left = 1;
-}
-
-float	distance_between_points(float x1, float y1, float x2, float y2)
-{
-	return (sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)));
+	i = 0;
+	while (s && s[i] && s[i] != '\n')
+	{
+		if (s[i] == '1' || s[i] == '0' || s[i] == ' ' || s[i] == 'N'
+			|| s[i] == 'S' || s[i] == 'E' || s[i] == 'W')
+			i++;
+		else
+			return (0);
+	}
+	if (s[i] == '\n')
+	{
+		return (1);
+	}
+	return (0);
 }

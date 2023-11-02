@@ -6,49 +6,63 @@
 /*   By: pferreir <pferreir@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/06 00:19:45 by dsydelny          #+#    #+#             */
-/*   Updated: 2023/10/31 03:21:08 by pferreir         ###   ########.fr       */
+/*   Updated: 2023/11/02 07:41:11 by pferreir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "cube3d.h"
+#include "cub3d.h"
 
-void	init_whos_here(t_data *data)
+void	init_ray(t_ray *ray)
 {
-	data->no_here = 0;
-	data->so_here = 0;
-	data->we_here = 0;
-	data->ea_here = 0;
-	data->c_here = 0;
-	data->f_here = 0;
+	ray->camera_x = 0;
+	ray->dir_x = 0;
+	ray->dir_y = 0;
+	ray->mapx = 0;
+	ray->mapy = 0;
+	ray->stepx = 0;
+	ray->stepy = 0;
+	ray->sdx = 0;
+	ray->sdy = 0;
+	ray->ddx = 0;
+	ray->ddy = 0;
+	ray->wall_dist = 0;
+	ray->wall_x = 0;
+	ray->side = 0;
+	ray->line_height = 0;
+	ray->start = 0;
+	ray->end = 0;
 }
 
 int	main(int ac, char **av)
 {
 	t_data	data;
+	int		i;
+	int		j;
 
-	ft_memset(& data, 0, sizeof(t_data));
+	ft_memset(&data, 0, sizeof(t_data));
 	if (ac != 2)
 		return (ft_printf("Wrong amount of arguments!\n"), 1);
 	if (ft_strncmp(&av[1][ft_strlen(av[1]) - 4], ".cub\0", 5))
 		return (ft_printf("It has to end with .cub!\n"), 1);
 	if (parsing(&data, av[1]))
 		return (1);
-
-	while (data.map && data.map[data.nbline])
+	i = 0;
+	j = 0;
+	data.nbline = data.h_map;
+	data.nbcol = 0;
+	while (i < data.nbline)
 	{
-		if ((int)ft_strlen(data.map[data.nbline]) != data.nbcol)
-			return (0);
-		data.nbline++;
+		j = ft_strlen(data.work_map[i]);
+		if (j >= data.nbcol)
+			data.nbcol = j - 1;
+		i++;
 	}
-	data.px = data.nbcol * 32;
-	data.py = (data.nbline - 3) * 32;
-	init_player(&(data.player));
+	init_player(&data);
 	init_game(&data);
-	// init game
+	render_map(&data);
+	key_handler(&data);
+	mlx_loop_hook(data.mlx, render, &data);
+	mlx_loop(data.mlx);
+	free_good_map(&data);
 	return (0);
 }
-
-// check first column, last row, last colum
-//handle spaces after xpm
-// floor ceill - can be spaces between r g b??
-// give to paola clear path to img

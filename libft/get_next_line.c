@@ -6,7 +6,7 @@
 /*   By: dsydelny <dsydelny@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/07 12:02:15 by dsydelny          #+#    #+#             */
-/*   Updated: 2023/10/13 17:33:20 by dsydelny         ###   ########.fr       */
+/*   Updated: 2023/10/31 02:45:34 by dsydelny         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,21 @@ char	*nothing_to_read(char **text, char *buf)
 	return (free(buf), NULL);
 }
 
+int	invalid_roww(char *s)
+{
+	int	i;
+
+	i = 0;
+	while (s[i])
+	{
+		if (ft_isascii(s[i]) || s[i] == '\n' || s[i] == '\0')
+			i++;
+		else
+			return (0);
+	}
+	return (1);
+}
+
 char	*get_next_line(int fd)
 {
 	static char	*text = NULL;
@@ -76,6 +91,8 @@ char	*get_next_line(int fd)
 		if (!val_rd)
 			return (nothing_to_read(&text, buf));
 		buf[val_rd] = '\0';
+		if (!invalid_roww(buf))
+			return (free(buf), NULL);
 		text = ft_gnl_strjoin(text, buf);
 	}
 	line = end_of_line(&text);

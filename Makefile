@@ -1,4 +1,4 @@
-NAME	=	cube3d
+NAME	=	cub3D
 
 DIR_SRCS		=	srcs
 
@@ -6,16 +6,21 @@ DIR_OBJS		=	objs
 
 SRCS_NAMES		=	main.c \
 					map.c \
-					is_what.c \
+					check_path.c \
+					what_the_path.c \
 					checking_borders.c \
+					borders_utils.c \
+					init_n_free.c \
+					utils.c \
+					floor_ceiling.c \
+					check_invalid.c \
+					fill_all.c \
+					render.c \
 					init_game.c \
 					player.c \
-					raycasting.c \
-					raycasting_utils.c \
-					render.c \
-					utils.c \
-					start_game.c
-
+					ft_raycasting.c \
+					key_handler.c \
+					ft_texture.c
 
 OBJS_NAMES		=	${SRCS_NAMES:.c=.o}
 
@@ -58,7 +63,7 @@ $(NAME): $(DIR_OBJS) $(OBJS)
 	make -C libft
 	make -C ft_printf
 	make -C mlx
-	$(CC) -g3 ${INC} $(OBJS) $(LIB)  mlx/libmlx.a mlx/libmlx_Linux.a -L. -lXext -L. -lX11 -o $(NAME)
+	$(CC) -g3 ${INC} $(OBJS) $(LIB)  mlx/libmlx.a mlx/libmlx_Linux.a -L. -lXext -L. -lX11 -lm -o $(NAME)
 	@echo "\033[31;5mcube3d\033[0m"
 
 
